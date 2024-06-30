@@ -9,17 +9,22 @@
 
 #include <arpa/inet.h>
 
-void *get_in_addr(sruct sockarddr *sa) {
+#include <string>
+
+static const std::string PORT="3490";
+static const int MAXDATASIZE=100;
+
+void *get_in_addr(struct sockaddr *sa) {
 	if (sa->sa_family == AF_INET) {
-		return &(((struct sockarddr_in*)sa)->sin_addr);
+		return &(((struct sockaddr_in*)sa)->sin_addr);
 	}
-	return &(((struct sockarddr_in*)sa)->sin6_addr);
+	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 int main(int argc, char *argv[]) {
 	int sockfd, numbytes;
 	char buf[MAXDATASIZE];
-	struct addrinfo hins, *servinfo, *p;
+	struct addrinfo hints, *servinfo, *p;
 	int rv;
 
 	char s[INET6_ADDRSTRLEN];
@@ -33,8 +38,8 @@ int main(int argc, char *argv[]) {
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) !=0) {
-		fprintf(stderr, "getaddrinfo: %s\n", gaistrerror(rv));
+	if ((rv = getaddrinfo(argv[1], PORT.c_str(), &hints, &servinfo)) !=0) {
+		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
 
@@ -66,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 	buf[numbytes] = '\0';
 
-	print("client: received '%s'\n", buf);
+	printf("client: received '%s'\n", buf);
 
 	close(sockfd);
 
