@@ -12,12 +12,16 @@
 
 #include <arpa/inet.h>
 
+// c++ headers
 #include <string>
+#include <iostream>
 
-static const std::string PORT="3490";
+// static const std::string PORT="3490";
+#define PORT "3490"
 static const int BACKLOG=10;
 
 void sigchld_handler(int s) {
+	(void)s;
 	int saved_errno = errno;
 
 	while(waitpid(-1, NULL, WNOHANG) > 0);
@@ -46,7 +50,7 @@ int main(void) {
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // use my IP
 
-	if ((rv = getaddrinfo(NULL, PORT.c_str(), &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
@@ -77,6 +81,11 @@ int main(void) {
 		exit(1);
 	}
 
+	if (listen(sockfd, BACKLOG) == -1) {
+		perror("listen");
+		exit(1);
+	}
+
 	sa.sa_handler = sigchld_handler;
 	sigemptyset(&sa.sa_mask);
 	sa.sa_flags = SA_RESTART;
@@ -94,13 +103,13 @@ int main(void) {
 			// perror("accept");
 			continue;
 		}
-
+		printf("connected\n");
 		inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr*)&their_addr), s, sizeof s);
 		printf("server: got connection from %s\n", s);
 
 		if (!fork()) {
 			close(sockfd);
-			if (send(new_fd, "Hello, World!", 13, 0) == -1) {
+			if (send(new_fd, "Hello, World!\n", 14, 0) == -1) {
 				perror("send");
 			}
 			close(new_fd);
