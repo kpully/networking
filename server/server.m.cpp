@@ -34,6 +34,7 @@ void *get_in_addr(struct sockaddr *sa) {
 	}
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
+static const int MAXDATASIZE = 100;
 
 int main(void) {
 	int sockfd, new_fd; // listen on sock_fd, new connection on new_fd
@@ -112,6 +113,14 @@ int main(void) {
 			if (send(new_fd, "Hello, World!\n", 14, 0) == -1) {
 				perror("send");
 			}
+			int numBytes;
+			char buf[MAXDATASIZE];
+			if ((numBytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) == -1)
+			{
+				perror("recv");
+				exit(1);
+			}
+
 			close(new_fd);
 			exit(0);
 		}
