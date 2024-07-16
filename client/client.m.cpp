@@ -6,10 +6,12 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <cstring>
 
 #include <arpa/inet.h>
 
 #include <string>
+#include <iostream>
 
 static const std::string PORT="3490";
 static const int MAXDATASIZE=100;
@@ -71,7 +73,18 @@ int main(int argc, char *argv[]) {
 
 	buf[numbytes] = '\0';
 
-	printf("client: received '%s'\n", buf);
+	printf("client: received %s", buf);
+	
+	std::string clientInput;
+	std::cout << "Type something to send to the server: ";
+	std::getline(std::cin, clientInput);
+
+	int bytesSent = send(sockfd, &clientInput, clientInput.size(), 0);
+	if (bytesSent == -1) {
+		perror("send");
+	} else {
+		std::cout << "Sent " << bytesSent << " bytes" << std::endl;
+	}
 
 	close(sockfd);
 
